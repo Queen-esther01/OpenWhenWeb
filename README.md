@@ -1,40 +1,82 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/pages/api-reference/create-next-app).
+# OpenWhen
 
-## Getting Started
+OpenWhen is a love letter app for intentional lovers. It helps two people create and share letters with mood, ambience, voice, and timing built around the feeling they want to send, not just the words on the page.
 
-First, run the development server:
+The project started as a personal gift idea I wanted to build years ago, and this competition gave me the reason to finally bring it to life. The goal is simple: help people feel closer by making love letters feel more immersive, thoughtful, and alive.
+
+## What It Does
+
+- Creates private love letters between two people.
+- Lets a sender pair a letter with ambience and voice.
+- Locks letters until the right moment, then opens them on a schedule.
+- Sends email notifications and reminders when a letter is ready.
+- Supports a soft, romantic experience designed around intimacy rather than volume.
+
+## Demo
+
+Live app: https://open-when-web.vercel.app/
+
+## How I Built It
+
+- Next.js 16 with the Pages Router for the app and API routes.
+- Supabase for authentication, database storage, and scheduled reminder jobs.
+- ElevenLabs for voice previews and audio generation.
+- Resend for invite emails and letter notifications.
+- React Query and Axios for client-side request handling.
+
+I intentionally did not use AI to write the entire letter. The idea is for the letter to come from the heart, while the product helps with the mood, vibe, and delivery around it.
+
+## Features
+
+- Private partner onboarding and invite flow.
+- Letter drafting, preview, and scheduled delivery.
+- Audio and voice presets to shape the emotional tone.
+- Locked letters that open at the right time.
+- Reminder emails for letters that are ready to be opened.
+
+## Future Work
+
+I ran out of time before adding a few ideas I still want to build:
+
+- AI-powered spell check and vibe check, without writing the full letter.
+- Support for multiple partners.
+- A proper revocation flow for when two people part ways.
+
+## Local Development
+
+Install dependencies and start the dev server:
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open http://localhost:3000 in your browser.
 
-You can start editing the page by modifying `pages/index.tsx`. The page auto-updates as you edit the file.
+## Environment Variables
 
-[API routes](https://nextjs.org/docs/pages/building-your-application/routing/api-routes) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.ts`.
+This app expects the following environment variables:
 
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/pages/building-your-application/routing/api-routes) instead of React pages.
+```bash
+NEXT_PUBLIC_SITE_URL=
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+SUPABASE_SERVICE_ROLE_KEY=
+RESEND_API_KEY=
+ELEVENLABS_API_KEY=
+READY_LETTER_JOB_SECRET=
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/pages/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Project Structure
 
-## Learn More
+- `src/pages` contains the homepage, dashboard, auth flow, API routes, and letter routes.
+- `src/components` contains the onboarding and UI components.
+- `src/lib` contains the Supabase client, API helpers, presets, and shared SQL/schema assets.
 
-To learn more about Next.js, take a look at the following resources:
+## Prize Categories
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn-pages-router) - an interactive Next.js tutorial.
+Submitting for: Best Use of ElevenLabs
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Deployment
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/pages/building-your-application/deploying) for more details.
+The app is deployed here: https://open-when-web.vercel.app/

@@ -1,9 +1,10 @@
 import Head from "next/head";
 import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Heart,
   LogOut,
+  LockKeyhole,
   PenLine,
   Plus,
   Sparkles,
@@ -17,6 +18,7 @@ import InvitePartnerModal from "@/components/onboarding/InvitePartnerModal";
 import CreateLetterWorkflowModal from "@/components/onboarding/CreateLetterWorkflowModal";
 import AppButton from "@/components/ui/AppButton";
 import ConfirmModal from "@/components/ui/ConfirmModal";
+import { useInviteDetails } from "@/lib/queries";
 
 type OpenWhenLetter = {
   id: string;
@@ -40,6 +42,31 @@ type PartnerInvite = {
   status: string;
 };
 
+function formatCountdown(opensAt: string | null, nowIso: string) {
+  if (!opensAt) return null;
+
+  const diffMs = new Date(opensAt).getTime() - new Date(nowIso).getTime();
+
+  if (diffMs <= 0) {
+    return null;
+  }
+
+  const totalMinutes = Math.ceil(diffMs / 60000);
+  const days = Math.floor(totalMinutes / (60 * 24));
+  const hours = Math.floor((totalMinutes % (60 * 24)) / 60);
+  const minutes = totalMinutes % 60;
+
+  if (days > 0) {
+    return `${days}d ${hours}h`;
+  }
+
+  if (hours > 0) {
+    return `${hours}h ${minutes}m`;
+  }
+
+  return `${minutes}m`;
+}
+
 export default function DashboardPage() {
   const router = useRouter();
   const [user, setUser] = useState<SupabaseUser | null>(null);
@@ -51,6 +78,16 @@ export default function DashboardPage() {
   const [showSignOutConfirm, setShowSignOutConfirm] = useState(false);
   const [username, setUsername] = useState("");
   const [partnerInvite, setPartnerInvite] = useState<PartnerInvite | null>(null);
+  const [currentNow, setCurrentNow] = useState(() => new Date().toISOString());
+  const inviteDetailsMutation = useInviteDetails();
+
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      setCurrentNow(new Date().toISOString());
+    }, 1000);
+
+    return () => window.clearInterval(timer);
+  }, []);
 
   const fetchLetters = async (currentUserId: string) => {
     if (!supabase) return;
@@ -113,30 +150,14 @@ export default function DashboardPage() {
         .in("status", ["accepted", "pending"])
         .order("created_at", { ascending: false })
         .limit(1);
-      console.log('currentUser.email:', currentUser.email?.toLowerCase());
-      console.log("Received invites:", receivedInvites);
 
       if (receivedInvites && receivedInvites.length > 0) {
-        const response = await fetch("/api/invite-details", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            invitedBy: receivedInvites[0].invited_by,
-            partnerEmail: receivedInvites[0].partner_email,
-          }),
+        const inviteDetails = await inviteDetailsMutation.mutateAsync({
+          invitedBy: receivedInvites[0].invited_by,
+          partnerEmail: receivedInvites[0].partner_email,
         });
 
-        const inviteDetails = (await response.json()) as
-          | {
-              success: true;
-              inviterEmail: string | null;
-              inviterName: string;
-              partnerEmail: string;
-              status: string;
-            }
-          | { error: string };
-
-        if ("success" in inviteDetails) {
+        if (inviteDetails.success) {
           finalPartnerInvite = {
             partner_name: inviteDetails.inviterName,
             partner_email: inviteDetails.inviterEmail ?? receivedInvites[0].partner_email,
@@ -169,7 +190,7 @@ export default function DashboardPage() {
     };
 
     void checkAuth();
-  }, [router]);
+  }, [inviteDetailsMutation, router]);
 
   useEffect(() => {
     if (router.query.compose === "1" && user) {
@@ -430,25 +451,43 @@ export default function DashboardPage() {
             ) : (
               <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 {receivedLetters.map((letter) => (
-                  <div
+                  <button
                     key={letter.id}
-                    className="group cursor-pointer rounded-[1.2rem] border border-[rgba(191,127,150,0.25)] bg-[rgba(255,252,251,0.85)] p-4 shadow-[0_4px_12px_rgba(128,63,89,0.04)] transition hover:-translate-y-0.5 hover:shadow-[0_8px_20px_rgba(128,63,89,0.1)]"
+                    type="button"
+                    disabled={Boolean(letter.is_locked && !letter.read_at && formatCountdown(letter.opens_at, currentNow))}
+                    onClick={() => void router.push(`/letter/${letter.id}`)}
+                    className={`group cursor-pointer rounded-[1.2rem] border p-4 text-left shadow-[0_4px_12px_rgba(128,63,89,0.04)] transition ${
+                      letter.read_at
+                        ? "border-[rgba(191,127,150,0.2)] bg-[rgba(255,252,251,0.82)] hover:-translate-y-0.5 hover:shadow-[0_8px_20px_rgba(128,63,89,0.1)]"
+                        : letter.is_locked && formatCountdown(letter.opens_at, currentNow)
+                          ? "cursor-not-allowed border-[rgba(191,127,150,0.16)] bg-[rgba(255,247,250,0.72)] opacity-80"
+                          : "cursor-pointer border-[rgba(191,127,150,0.34)] bg-[rgba(255,247,250,0.95)] hover:-translate-y-0.5 hover:shadow-[0_8px_20px_rgba(128,63,89,0.1)]"
+                    } disabled:cursor-not-allowed disabled:shadow-[0_4px_12px_rgba(128,63,89,0.04)]`}
                   >
                     <div className="flex items-start justify-between gap-2">
                       <h3 className="text-base font-bold text-[#5f2f43] [font-family:var(--font-romantic-serif),Georgia,Times_New_Roman,serif]">
                         {letter.title}
                       </h3>
-                      <span className="shrink-0 rounded-full bg-[rgba(138,53,84,0.08)] px-2 py-0.5 text-[0.6rem] font-bold uppercase tracking-[0.08em] text-[#8a3554]">
-                        Received
-                      </span>
+                      <div className="flex shrink-0 flex-col items-end gap-1">
+                        <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[0.6rem] font-bold uppercase tracking-[0.08em] ${letter.read_at ? "bg-[rgba(86,143,100,0.12)] text-[#467257]" : "bg-[rgba(138,53,84,0.08)] text-[#8a3554]"}`}>
+                          {letter.read_at ? "Opened" : "Unread"}
+                        </span>
+                        {letter.is_locked && !letter.read_at ? (
+                          <span className="inline-flex items-center gap-1 rounded-full bg-[rgba(138,53,84,0.08)] px-2 py-0.5 text-[0.6rem] font-bold uppercase tracking-[0.08em] text-[#8a3554]">
+                            <LockKeyhole size={10} /> Locked
+                          </span>
+                        ) : null}
+                      </div>
                     </div>
-                    {letter.opens_at ? (
+                    {!letter.read_at && letter.is_locked && formatCountdown(letter.opens_at, currentNow) ? (
+                      <p className="mt-2 text-xs font-semibold text-[#8a3554]">
+                        Ready in {formatCountdown(letter.opens_at, currentNow)}
+                      </p>
+                    ) : letter.read_at ? (
                       <p className="mt-2 text-xs text-[#936273]">
-                        Opens{" "}
-                        {new Date(letter.opens_at).toLocaleDateString("en-US", {
+                        Opened {new Date(letter.read_at).toLocaleDateString("en-US", {
                           month: "short",
                           day: "numeric",
-                          year: "numeric",
                         })}
                       </p>
                     ) : (
@@ -461,7 +500,7 @@ export default function DashboardPage() {
                         day: "numeric",
                       })}
                     </p>
-                  </div>
+                  </button>
                 ))}
               </div>
             )}
@@ -495,26 +534,12 @@ export default function DashboardPage() {
                 const invite = data[0];
                 // If this is a received invite (I'm the partner), fetch inviter's name
                 if (invite.partner_email?.toLowerCase() === user.email?.toLowerCase()) {
-                  const response = await fetch("/api/invite-details", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                      invitedBy: invite.invited_by,
-                      partnerEmail: invite.partner_email,
-                    }),
+                  const inviteDetails = await inviteDetailsMutation.mutateAsync({
+                    invitedBy: invite.invited_by,
+                    partnerEmail: invite.partner_email,
                   });
 
-                  const inviteDetails = (await response.json()) as
-                    | {
-                        success: true;
-                        inviterEmail: string | null;
-                        inviterName: string;
-                        partnerEmail: string;
-                        status: string;
-                      }
-                    | { error: string };
-
-                  if ("success" in inviteDetails) {
+                  if (inviteDetails.success) {
                     setPartnerInvite({
                       partner_name: inviteDetails.inviterName,
                       partner_email: inviteDetails.inviterEmail ?? invite.partner_email,
@@ -536,6 +561,8 @@ export default function DashboardPage() {
           setShowCreateWorkflow(false);
           setDraftToEdit(null);
         }}
+        recipientEmail={partnerInvite?.partner_email ?? null}
+        recipientName={partnerDisplayName}
         initialDraft={draftToEdit}
         onDraftSaved={async () => {
           if (user) {

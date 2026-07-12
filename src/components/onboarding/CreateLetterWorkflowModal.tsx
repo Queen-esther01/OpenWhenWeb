@@ -14,8 +14,15 @@ import {
 } from "lucide-react";
 import toast from "react-hot-toast";
 import AppButton from "@/components/ui/AppButton";
+import {
+  ambientPreviewVolume,
+  previewVoiceUrl,
+  soundPresets,
+  voicePreviewVolume,
+  voicePresets,
+} from "@/lib/audioPresets";
 import { supabase } from "@/lib/supabaseClient";
-import { useSaveLetterDraft, useTts } from "@/lib/queries";
+import { useSaveLetterDraft, useSendLetter, useTts } from "@/lib/queries";
 
 type CreateLetterWorkflowModalProps = {
   open: boolean;
@@ -57,14 +64,6 @@ type VoicePreset = {
   previewVoiceId: string;
   previewVoiceUrl: string;
 };
-
-const previewAudioUrl =
-  "https://res.cloudinary.com/tinkerbell/video/upload/v1783687887/mickeyscat-calm-piano-mickeyscat-147764_jf7q1r.mp3";
-const fullPreviewVoiceId = "ynFh2KFGO14BryP8q1rh";
-const previewVoiceUrl =
-  "https://res.cloudinary.com/tinkerbell/video/upload/v1783886590/Durty_D_-_calm_relaxing_romantic_pvc_s50_m2_beemmr.mp3";
-const ambientPreviewVolume = 0.1;
-const voicePreviewVolume = 0.85;
 
 function formatDatetimeLocalValue(date: Date) {
   const localDate = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
@@ -122,63 +121,6 @@ const openWhenCategories: OpenWhenCategory[] = [
   },
 ];
 
-const soundPresets: SoundPreset[] = [
-  {
-    id: "calm-piano",
-    label: "Calm Piano",
-    helper: "Soft and reflective.",
-    previewAudioUrl,
-  },
-  {
-    id: "soft-rain",
-    label: "Soft Rain",
-    helper: "Gentle and atmospheric.",
-    previewAudioUrl,
-  },
-  {
-    id: "evening-strings",
-    label: "Evening Strings",
-    helper: "Warm and cinematic.",
-    previewAudioUrl,
-  },
-  {
-    id: "midnight-ambient",
-    label: "Midnight Ambient",
-    helper: "Low, intimate, and still.",
-    previewAudioUrl,
-  },
-];
-
-const voicePresets: VoicePreset[] = [
-  {
-    id: "soft-warmth",
-    label: "Soft Warmth",
-    helper: "Tender and grounding.",
-    previewVoiceId: fullPreviewVoiceId,
-    previewVoiceUrl,
-  },
-  {
-    id: "gentle-confident",
-    label: "Gentle Confident",
-    helper: "Clear, kind, reassuring.",
-    previewVoiceId: fullPreviewVoiceId,
-    previewVoiceUrl,
-  },
-  {
-    id: "romantic-whisper",
-    label: "Romantic Whisper",
-    helper: "Closer, softer, more private.",
-    previewVoiceId: fullPreviewVoiceId,
-    previewVoiceUrl,
-  },
-  {
-    id: "steady-companion",
-    label: "Steady Companion",
-    helper: "Calm and always present.",
-    previewVoiceId: fullPreviewVoiceId,
-    previewVoiceUrl,
-  },
-];
 
 export default function CreateLetterWorkflowModal({
   open,
@@ -211,6 +153,7 @@ export default function CreateLetterWorkflowModal({
   const activeVoiceObjectUrlRef = useRef<string | null>(null);
   const ttsMutation = useTts();
   const saveDraftMutation = useSaveLetterDraft();
+  const sendLetterMutation = useSendLetter();
 
   const selectedCategory =
     openWhenCategories.find((option) => option.id === selectedCategoryId) ??
@@ -517,31 +460,19 @@ export default function CreateLetterWorkflowModal({
     const draftId = savedDraftId ?? initialDraft?.id ?? null;
 
     try {
-      const response = await fetch("/api/send-letter", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          accessToken,
-          draftId,
-          title: title.trim() || selectedCategory.displayLabel,
-          content: previewText,
-          opensAt: isLocked && openAt ? new Date(openAt).toISOString() : null,
-          isLocked,
-          categoryId: selectedCategory.id,
-          soundId: selectedSound.id,
-          voiceId: selectedVoice.id,
-          recipientEmail,
-          recipientName,
-        }),
+      await sendLetterMutation.mutateAsync({
+        accessToken,
+        draftId,
+        title: title.trim() || selectedCategory.displayLabel,
+        content: previewText,
+        opensAt: isLocked && openAt ? new Date(openAt).toISOString() : null,
+        isLocked,
+        categoryId: selectedCategory.id,
+        soundId: selectedSound.id,
+        voiceId: selectedVoice.id,
+        recipientEmail,
+        recipientName,
       });
-
-      const result = (await response.json()) as
-        | { success: true; letterId: string }
-        | { error: string };
-
-      if (!response.ok || !("success" in result)) {
-        throw new Error("error" in result ? result.error : "Unable to send note right now.");
-      }
 
       setValidationMessage("");
       await onDraftSaved?.();

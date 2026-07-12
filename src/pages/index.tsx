@@ -14,6 +14,7 @@ import {
 import AppButton from "@/components/ui/AppButton";
 import FeatureCard from "@/components/ui/FeatureCard";
 import SignupModal from "@/components/onboarding/SignupModal";
+import { previewAudioUrl, previewVoiceId } from "@/lib/audioPresets";
 import { useTts } from "@/lib/queries";
 import { supabase } from "@/lib/supabaseClient";
 
@@ -29,9 +30,6 @@ const calmSans = Nunito({
   weight: ["400", "500", "600", "700"],
 });
 
-const previewAudioUrl =
-  "https://res.cloudinary.com/tinkerbell/video/upload/v1783687887/mickeyscat-calm-piano-mickeyscat-147764_jf7q1r.mp3";
-const previewVoiceId = "ynFh2KFGO14BryP8q1rh";
 const previewVoiceText =
   "My darling, I know today has been hard, and I want you to know that I see you. I see your strength, your courage, and your heart. Even when the world feels heavy, remember that you are loved beyond measure. Take a deep breath, and let this be a reminder that you are never alone.";
 

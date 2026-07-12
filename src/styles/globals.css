@@ -1,26 +1,46 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #fffaf8;
+  --foreground: #3e2934;
+  --rose-100: #fdf0f3;
+  --rose-200: #f9e5ec;
+  --rose-300: #efccd9;
+  --rose-500: #c15e7f;
+  --rose-700: #8b3a57;
+  --blush: #ffe6dc;
+  --pearl: #fff8f4;
+  --ink-soft: #4f3b45;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  box-sizing: border-box;
 }
 
 body {
-  background: var(--background);
+  margin: 0;
+  min-height: 100vh;
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background:
+    radial-gradient(circle at 15% 12%, #ffffff 0%, rgba(255, 255, 255, 0) 50%),
+    radial-gradient(circle at 90% 20%, var(--rose-100) 0%, rgba(253, 240, 243, 0) 40%),
+    radial-gradient(circle at 75% 90%, var(--blush) 0%, rgba(255, 230, 220, 0) 38%),
+    linear-gradient(145deg, #fffaf8 0%, #fff5f1 48%, #fff9f8 100%);
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

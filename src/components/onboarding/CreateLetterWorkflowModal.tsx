@@ -805,7 +805,7 @@ export default function CreateLetterWorkflowModal({
                         value={openAt}
                         onChange={(event) => setOpenAt(event.target.value)}
                         min={minimumOpenAt}
-                        className="rounded-2xl border border-[rgba(191,127,150,0.28)] bg-white px-4 py-3 text-sm outline-none"
+                        className="w-full rounded-2xl border border-[rgba(191,127,150,0.28)] bg-[#fff8fa] px-4 py-3 text-sm text-[#5f2f43] outline-none [color-scheme:light]"
                       />
                       <span className="text-xs font-normal leading-5 text-[#936273]">
                         Pick a future opening time for locked notes.
@@ -822,8 +822,12 @@ export default function CreateLetterWorkflowModal({
                     >
                       {saveDraftMutation.isPending ? "Saving..." : "Save draft"}
                     </AppButton>
-                    <AppButton type="button" onClick={handleSendNote} disabled={!canSendNote}>
-                      Send note
+                    <AppButton
+                      type="button"
+                      onClick={handleSendNote}
+                      disabled={sendLetterMutation.isPending || !canSendNote}
+                    >
+                      {sendLetterMutation.isPending ? "Sending..." : "Send note"}
                     </AppButton>
                     <AppButton type="button" variant="link" onClick={onClose} className="ml-auto px-0">
                       Close

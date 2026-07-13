@@ -39,6 +39,8 @@ export default function Home() {
   const previewAudioRef = useRef<HTMLAudioElement | null>(null);
   const previewVoiceAudioRef = useRef<HTMLAudioElement | null>(null);
   const activeVoiceObjectUrlRef = useRef<string | null>(null);
+  const ambientWasPlayingBeforeDisableRef = useRef(false);
+  const voiceWasPlayingBeforeDisableRef = useRef(false);
 
   const [isSignupOpen, setIsSignupOpen] = useState(false);
   const [isPreviewPlaying, setIsPreviewPlaying] = useState(false);
@@ -47,6 +49,8 @@ export default function Home() {
   const [voiceEnabled, setVoiceEnabled] = useState(true);
   const [volume, setVolume] = useState(50);
   const [voiceVolume, setVoiceVolume] = useState(50);
+  const previousAmbientEnabledRef = useRef<boolean>(ambientEnabled);
+  const previousVoiceEnabledRef = useRef<boolean>(voiceEnabled);
 
   const isAnyPreviewPlaying = isPreviewPlaying || isVoicePreviewPlaying;
   const previewVoiceUrl = "https://res.cloudinary.com/tinkerbell/video/upload/v1783903727/ElevenLabs_2026-07-13T00_47_55_Joseff_Sweet_-_Comfort_and_Warmth_pvc_s50_m2_odfags.mp3"
@@ -70,6 +74,56 @@ export default function Home() {
 
     audio.volume = voiceVolume / 100;
   }, [voiceVolume]);
+
+  useEffect(() => {
+    const wasEnabled = previousAmbientEnabledRef.current;
+    previousAmbientEnabledRef.current = ambientEnabled;
+
+    if (wasEnabled && !ambientEnabled) {
+      ambientWasPlayingBeforeDisableRef.current = isPreviewPlaying;
+      previewAudioRef.current?.pause();
+      setIsPreviewPlaying(false);
+      return;
+    }
+
+    if (!wasEnabled && ambientEnabled) {
+      if (!ambientWasPlayingBeforeDisableRef.current) {
+        return;
+      }
+
+      ambientWasPlayingBeforeDisableRef.current = false;
+      void previewAudioRef.current
+        ?.play()
+        .then(() => setIsPreviewPlaying(true))
+        .catch(() => setIsPreviewPlaying(false));
+      return;
+    }
+  }, [ambientEnabled, isPreviewPlaying]);
+
+  useEffect(() => {
+    const wasEnabled = previousVoiceEnabledRef.current;
+    previousVoiceEnabledRef.current = voiceEnabled;
+
+    if (wasEnabled && !voiceEnabled) {
+      voiceWasPlayingBeforeDisableRef.current = isVoicePreviewPlaying;
+      previewVoiceAudioRef.current?.pause();
+      setIsVoicePreviewPlaying(false);
+      return;
+    }
+
+    if (!wasEnabled && voiceEnabled) {
+      if (!voiceWasPlayingBeforeDisableRef.current) {
+        return;
+      }
+
+      voiceWasPlayingBeforeDisableRef.current = false;
+      void previewVoiceAudioRef.current
+        ?.play()
+        .then(() => setIsVoicePreviewPlaying(true))
+        .catch(() => setIsVoicePreviewPlaying(false));
+      return;
+    }
+  }, [voiceEnabled, isVoicePreviewPlaying]);
 
   useEffect(() => {
     return () => {

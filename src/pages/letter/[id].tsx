@@ -114,6 +114,10 @@ export default function LetterPage({ letter, canOpen, now }: LetterPageProps) {
   const ambientAudioRef = useRef<HTMLAudioElement | null>(null);
   const voiceAudioRef = useRef<HTMLAudioElement | null>(null);
   const voiceAudioUrlRef = useRef<string | null>(null);
+  const previousSoundSelectedRef = useRef(soundSelected);
+  const previousVoiceSelectedRef = useRef(voiceSelected);
+  const soundWasPlayingBeforeDisableRef = useRef(false);
+  const voiceWasPlayingBeforeDisableRef = useRef(false);
   const ttsMutation = useTts();
 
   const soundPreset = letter.sound_id ? soundPresets.find((option) => option.id === letter.sound_id) ?? null : null;
@@ -129,6 +133,54 @@ export default function LetterPage({ letter, canOpen, now }: LetterPageProps) {
       }
     };
   }, []);
+
+  useEffect(() => {
+    const wasSelected = previousSoundSelectedRef.current;
+    previousSoundSelectedRef.current = soundSelected;
+
+    if (wasSelected && !soundSelected) {
+      soundWasPlayingBeforeDisableRef.current = ambientPlaying;
+      ambientAudioRef.current?.pause();
+      setAmbientPlaying(false);
+      return;
+    }
+
+    if (!wasSelected && soundSelected) {
+      if (!soundWasPlayingBeforeDisableRef.current || !ambientAudioRef.current) {
+        return;
+      }
+
+      soundWasPlayingBeforeDisableRef.current = false;
+      void ambientAudioRef.current
+        .play()
+        .then(() => setAmbientPlaying(true))
+        .catch(() => setAmbientPlaying(false));
+    }
+  }, [ambientPlaying, soundSelected]);
+
+  useEffect(() => {
+    const wasSelected = previousVoiceSelectedRef.current;
+    previousVoiceSelectedRef.current = voiceSelected;
+
+    if (wasSelected && !voiceSelected) {
+      voiceWasPlayingBeforeDisableRef.current = voicePlaying;
+      voiceAudioRef.current?.pause();
+      setVoicePlaying(false);
+      return;
+    }
+
+    if (!wasSelected && voiceSelected) {
+      if (!voiceWasPlayingBeforeDisableRef.current || !voiceAudioRef.current) {
+        return;
+      }
+
+      voiceWasPlayingBeforeDisableRef.current = false;
+      void voiceAudioRef.current
+        .play()
+        .then(() => setVoicePlaying(true))
+        .catch(() => setVoicePlaying(false));
+    }
+  }, [voicePlaying, voiceSelected]);
 
   const liveCountdown = useMemo(() => formatCountdown(letter.opens_at, now), [letter.opens_at, now]);
 

@@ -14,8 +14,7 @@ import {
 import AppButton from "@/components/ui/AppButton";
 import FeatureCard from "@/components/ui/FeatureCard";
 import SignupModal from "@/components/onboarding/SignupModal";
-import { previewAudioUrl, previewVoiceId } from "@/lib/audioPresets";
-import { useTts } from "@/lib/queries";
+import { previewAudioUrl } from "@/lib/audioPresets";
 import { supabase } from "@/lib/supabaseClient";
 
 const romanticSerif = Cormorant_Garamond({
@@ -34,19 +33,23 @@ const previewVoiceText =
   "My darling, I know today has been hard, and I want you to know that I see you. I see your strength, your courage, and your heart. Even when the world feels heavy, remember that you are loved beyond measure. Take a deep breath, and let this be a reminder that you are never alone.";
 
 export default function Home() {
+
   const router = useRouter();
+
   const previewAudioRef = useRef<HTMLAudioElement | null>(null);
   const previewVoiceAudioRef = useRef<HTMLAudioElement | null>(null);
   const activeVoiceObjectUrlRef = useRef<string | null>(null);
+
   const [isSignupOpen, setIsSignupOpen] = useState(false);
   const [isPreviewPlaying, setIsPreviewPlaying] = useState(false);
   const [isVoicePreviewPlaying, setIsVoicePreviewPlaying] = useState(false);
   const [ambientEnabled, setAmbientEnabled] = useState(true);
   const [voiceEnabled, setVoiceEnabled] = useState(true);
-  const [volume, setVolume] = useState(10);
-  const [voiceVolume, setVoiceVolume] = useState(85);
+  const [volume, setVolume] = useState(50);
+  const [voiceVolume, setVoiceVolume] = useState(50);
+
   const isAnyPreviewPlaying = isPreviewPlaying || isVoicePreviewPlaying;
-  const ttsMutation = useTts();
+  const previewVoiceUrl = "https://res.cloudinary.com/tinkerbell/video/upload/v1783903727/ElevenLabs_2026-07-13T00_47_55_Joseff_Sweet_-_Comfort_and_Warmth_pvc_s50_m2_odfags.mp3"
 
   useEffect(() => {
     const audio = previewAudioRef.current;
@@ -119,30 +122,14 @@ export default function Home() {
     }
 
     if (voiceEnabled && voiceAudio) {
-      ttsMutation.mutate(
-        {
-          text: previewVoiceText,
-          voiceId: previewVoiceId,
-          modelId: "eleven_flash_v2_5",
-        },
-        {
-          onSuccess: async ({ audioBlob }) => {
-            const objectUrl = URL.createObjectURL(audioBlob);
+      voiceAudio.src = previewVoiceUrl;
 
-            if (activeVoiceObjectUrlRef.current) {
-              URL.revokeObjectURL(activeVoiceObjectUrlRef.current);
-            }
-
-            activeVoiceObjectUrlRef.current = objectUrl;
-            voiceAudio.src = objectUrl;
-            await voiceAudio.play();
-            setIsVoicePreviewPlaying(true);
-          },
-          onError: () => {
-            setIsVoicePreviewPlaying(false);
-          },
-        },
-      );
+      try {
+        await voiceAudio.play();
+        setIsVoicePreviewPlaying(true);
+      } catch {
+        setIsVoicePreviewPlaying(false);
+      }
     }
 
   };

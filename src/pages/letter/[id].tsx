@@ -104,7 +104,6 @@ export const getServerSideProps: GetServerSideProps<LetterPageProps> = async (co
 
 export default function LetterPage({ letter, canOpen, now }: LetterPageProps) {
   const router = useRouter();
-  const [currentNow, setCurrentNow] = useState(now);
   const [soundSelected, setSoundSelected] = useState(true);
   const [voiceSelected, setVoiceSelected] = useState(true);
   const [soundVolume, setSoundVolume] = useState(0.1);
@@ -121,16 +120,6 @@ export default function LetterPage({ letter, canOpen, now }: LetterPageProps) {
   const voicePreset = letter.voice_id ? voicePresets.find((option) => option.id === letter.voice_id) ?? null : null;
 
   useEffect(() => {
-    if (canOpen) return;
-
-    const timer = window.setInterval(() => {
-      setCurrentNow(new Date().toISOString());
-    }, 1000);
-
-    return () => window.clearInterval(timer);
-  }, [canOpen]);
-
-  useEffect(() => {
     return () => {
       ambientAudioRef.current?.pause();
       voiceAudioRef.current?.pause();
@@ -141,7 +130,7 @@ export default function LetterPage({ letter, canOpen, now }: LetterPageProps) {
     };
   }, []);
 
-  const liveCountdown = useMemo(() => formatCountdown(letter.opens_at, currentNow), [letter.opens_at, currentNow]);
+  const liveCountdown = useMemo(() => formatCountdown(letter.opens_at, now), [letter.opens_at, now]);
 
   const handleBack = () => {
     if (window.history.length > 1) {

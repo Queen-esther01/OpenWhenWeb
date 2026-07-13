@@ -263,7 +263,7 @@ export default function DashboardPage() {
               <button
                 type="button"
                 onClick={() => setShowSignOutConfirm(true)}
-                className="inline-flex whitespace-nowrap items-center gap-1.5 rounded-full border border-[rgba(119,69,88,0.3)] bg-transparent px-3 py-2 text-xs font-bold text-[#774558] transition hover:bg-[rgba(255,255,255,0.6)]"
+                className="inline-flex cursor-pointer whitespace-nowrap items-center gap-1.5 rounded-full border border-[rgba(119,69,88,0.3)] bg-transparent px-3 py-2 text-xs font-bold text-[#774558] transition hover:bg-[rgba(255,255,255,0.6)]"
               >
                 <LogOut size={14} />
                 Sign out

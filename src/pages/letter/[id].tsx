@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import type { GetServerSideProps } from "next";
 import { useRouter } from "next/router";
 import { createClient } from "@supabase/supabase-js";
-import { ArrowLeft, LockKeyhole, Mic, PauseCircle, Play, Waves } from "lucide-react";
+import { ArrowLeft, LockKeyhole, LoaderCircle, Mic, PauseCircle, Play, Waves } from "lucide-react";
 import AppButton from "@/components/ui/AppButton";
 import {
   ambientPreviewVolume,
@@ -122,6 +122,7 @@ export default function LetterPage({ letter, canOpen, now }: LetterPageProps) {
 
   const soundPreset = letter.sound_id ? soundPresets.find((option) => option.id === letter.sound_id) ?? null : null;
   const voicePreset = letter.voice_id ? voicePresets.find((option) => option.id === letter.voice_id) ?? null : null;
+  const isVoiceLoading = ttsMutation.isPending;
 
   useEffect(() => {
     return () => {
@@ -203,6 +204,10 @@ export default function LetterPage({ letter, canOpen, now }: LetterPageProps) {
   const playSelected = async () => {
     if (ambientPlaying || voicePlaying) {
       stopSelectedPlayback();
+      return;
+    }
+
+    if (isVoiceLoading) {
       return;
     }
 
@@ -359,11 +364,22 @@ export default function LetterPage({ letter, canOpen, now }: LetterPageProps) {
             <button
               type="button"
               onClick={() => void playSelected()}
-              disabled={(!soundSelected && !voiceSelected) || (!soundPreset && soundSelected) || (!voicePreset && voiceSelected) || (!letter.voice_id && voiceSelected)}
+              disabled={
+                (!soundSelected && !voiceSelected) ||
+                (!soundPreset && soundSelected) ||
+                (!voicePreset && voiceSelected) ||
+                (!letter.voice_id && voiceSelected)
+              }
               className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-full border border-[rgba(119,69,88,0.18)] bg-[rgba(255,247,250,0.9)] px-4 py-3 text-sm font-bold text-[#774558] transition hover:bg-[rgba(255,247,250,1)] disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {ambientPlaying || voicePlaying ? <PauseCircle size={16} /> : <Play size={16} />}
-              {ambientPlaying || voicePlaying ? "Pause selected" : "Play selected"}
+              {isVoiceLoading ? (
+                <LoaderCircle size={16} className="animate-spin" />
+              ) : ambientPlaying || voicePlaying ? (
+                <PauseCircle size={16} />
+              ) : (
+                <Play size={16} />
+              )}
+              {isVoiceLoading ? "Loading voice..." : ambientPlaying || voicePlaying ? "Pause selected" : "Play selected"}
             </button>
 
             {ambientPlaying || voicePlaying ? (
@@ -378,7 +394,9 @@ export default function LetterPage({ letter, canOpen, now }: LetterPageProps) {
           </div>
 
           <p className="mt-3 text-xs leading-5 text-[#936273]">
-            {voiceLoadError
+            {isVoiceLoading
+              ? "Preparing the voice audio..."
+              : voiceLoadError
               ? voiceLoadError
               : voiceSelected && !voicePreset
                 ? "Voice could not be loaded."

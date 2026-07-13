@@ -7,6 +7,7 @@ import {
   LockKeyhole,
   Mic,
   MoonStar,
+  LoaderCircle,
   PauseCircle,
   Play,
   Sparkles,
@@ -170,6 +171,7 @@ export default function CreateLetterWorkflowModal({
   const canSubmitLockedNote = !isLocked || hasValidOpenAt;
   const lockedDateValidationMessage = "Choose a future opening date and time when the note is locked.";
   const canSendNote = canSubmitLockedNote && Boolean(recipientEmail);
+  const isVoicePreviewLoading = ttsMutation.isPending;
 
   useEffect(() => {
     return () => {
@@ -365,6 +367,10 @@ export default function CreateLetterWorkflowModal({
   };
 
   const handlePreviewWholeNote = async () => {
+    if (isVoicePreviewLoading) {
+      return;
+    }
+
     if (fullAmbientPlaying || fullVoicePlaying) {
       stopPreview();
       return;
@@ -805,7 +811,7 @@ export default function CreateLetterWorkflowModal({
                         value={openAt}
                         onChange={(event) => setOpenAt(event.target.value)}
                         min={minimumOpenAt}
-                        className="w-full rounded-2xl border border-[rgba(191,127,150,0.28)] bg-[#fff8fa] px-4 py-3 text-sm text-[#5f2f43] outline-none [color-scheme:light]"
+                        className="w-full rounded-2xl border border-[rgba(191,127,150,0.28)] bg-[#fff8fa] px-4 py-3 text-sm text-[#5f2f43] outline-none scheme-light"
                       />
                       <span className="text-xs font-normal leading-5 text-[#936273]">
                         Pick a future opening time for locked notes.

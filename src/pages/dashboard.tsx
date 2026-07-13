@@ -358,46 +358,26 @@ export default function DashboardPage() {
             ) : (
               <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 {myLetters.map((letter) => (
-                  <div
-                    key={letter.id}
-                    className="group rounded-[1.2rem] border border-[rgba(191,127,150,0.25)] bg-[rgba(255,252,251,0.85)] p-4 shadow-[0_4px_12px_rgba(128,63,89,0.04)] transition hover:-translate-y-0.5 hover:shadow-[0_8px_20px_rgba(128,63,89,0.1)]"
-                  >
-                    <div className="flex items-start justify-between gap-2">
-                      <h3 className="text-base font-bold text-[#5f2f43] [font-family:var(--font-romantic-serif),Georgia,Times_New_Roman,serif]">
-                        {letter.title}
-                      </h3>
-                      {letter.status === "draft" ? (
+                  letter.status === "draft" ? (
+                    <div
+                      key={letter.id}
+                      className="group rounded-[1.2rem] border border-[rgba(191,127,150,0.25)] bg-[rgba(255,252,251,0.85)] p-4 shadow-[0_4px_12px_rgba(128,63,89,0.04)] transition hover:-translate-y-0.5 hover:shadow-[0_8px_20px_rgba(128,63,89,0.1)]"
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <h3 className="text-base font-bold text-[#5f2f43] [font-family:var(--font-romantic-serif),Georgia,Times_New_Roman,serif]">
+                          {letter.title}
+                        </h3>
                         <span className="shrink-0 rounded-full bg-[rgba(143,74,99,0.1)] px-2 py-0.5 text-[0.6rem] font-bold uppercase tracking-[0.08em] text-[#8a3554]">
                           Draft
                         </span>
-                      ) : (
-                        <div className="flex shrink-0 flex-col items-end gap-1">
-                          <span className="rounded-full bg-[rgba(138,53,84,0.08)] px-2 py-0.5 text-[0.6rem] font-bold uppercase tracking-[0.08em] text-[#8a3554]">
-                            Sent
-                          </span>
-                          <span className={`rounded-full px-2 py-0.5 text-[0.6rem] font-bold uppercase tracking-[0.08em] ${letter.read_at ? "bg-[rgba(86,143,100,0.12)] text-[#467257]" : "bg-[rgba(143,74,99,0.08)] text-[#8a3554]"}`}>
-                            {letter.read_at ? "Read" : "Unread"}
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                    <p className="mt-2 text-xs text-[#936273]">
-                      {letter.status === "draft"
-                        ? "Saved draft"
-                        : letter.read_at
-                          ? `Opened ${new Date(letter.read_at).toLocaleDateString("en-US", {
-                              month: "short",
-                              day: "numeric",
-                            })}`
-                          : "Sent letter"}
-                    </p>
-                    <p className="mt-1 text-[0.65rem] text-[#b08d99]">
-                      Created {new Date(letter.created_at).toLocaleDateString("en-US", {
-                        month: "short",
-                        day: "numeric",
-                      })}
-                    </p>
-                    {letter.status === "draft" ? (
+                      </div>
+                      <p className="mt-2 text-xs text-[#936273]">Saved draft</p>
+                      <p className="mt-1 text-[0.65rem] text-[#b08d99]">
+                        Created {new Date(letter.created_at).toLocaleDateString("en-US", {
+                          month: "short",
+                          day: "numeric",
+                        })}
+                      </p>
                       <div className="mt-4">
                         <AppButton
                           type="button"
@@ -409,8 +389,43 @@ export default function DashboardPage() {
                           Continue working
                         </AppButton>
                       </div>
-                    ) : null}
-                  </div>
+                    </div>
+                  ) : (
+                    <button
+                      key={letter.id}
+                      type="button"
+                      onClick={() => void router.push(`/letter/${letter.id}`)}
+                      className="group cursor-pointer rounded-[1.2rem] border border-[rgba(191,127,150,0.34)] bg-[rgba(255,247,250,0.95)] p-4 text-left shadow-[0_4px_12px_rgba(128,63,89,0.04)] transition hover:-translate-y-0.5 hover:shadow-[0_8px_20px_rgba(128,63,89,0.1)]"
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <h3 className="text-base font-bold text-[#5f2f43] [font-family:var(--font-romantic-serif),Georgia,Times_New_Roman,serif]">
+                          {letter.title}
+                        </h3>
+                        <div className="flex shrink-0 flex-col items-end gap-1">
+                          <span className="rounded-full bg-[rgba(138,53,84,0.08)] px-2 py-0.5 text-[0.6rem] font-bold uppercase tracking-[0.08em] text-[#8a3554]">
+                            Sent
+                          </span>
+                          <span className={`rounded-full px-2 py-0.5 text-[0.6rem] font-bold uppercase tracking-[0.08em] ${letter.read_at ? "bg-[rgba(86,143,100,0.12)] text-[#467257]" : "bg-[rgba(143,74,99,0.08)] text-[#8a3554]"}`}>
+                            {letter.read_at ? "Read" : "Unread"}
+                          </span>
+                        </div>
+                      </div>
+                      <p className="mt-2 text-xs text-[#936273]">
+                        {letter.read_at
+                          ? `Opened ${new Date(letter.read_at).toLocaleDateString("en-US", {
+                              month: "short",
+                              day: "numeric",
+                            })}`
+                          : "Sent letter"}
+                      </p>
+                      <p className="mt-1 text-[0.65rem] text-[#b08d99]">
+                        Created {new Date(letter.created_at).toLocaleDateString("en-US", {
+                          month: "short",
+                          day: "numeric",
+                        })}
+                      </p>
+                    </button>
+                  )
                 ))}
               </div>
             )}

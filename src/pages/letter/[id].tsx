@@ -152,65 +152,6 @@ export default function LetterPage({ letter, canOpen, now }: LetterPageProps) {
     void router.push("/dashboard");
   };
 
-  const toggleAmbient = async () => {
-    if (!soundPreset || !ambientAudioRef.current) return;
-
-    if (ambientPlaying) {
-      ambientAudioRef.current.pause();
-      setAmbientPlaying(false);
-      return;
-    }
-
-    ambientAudioRef.current.src = soundPreset.previewAudioUrl;
-    ambientAudioRef.current.currentTime = 0;
-    ambientAudioRef.current.volume = soundVolume;
-
-    try {
-      await ambientAudioRef.current.play();
-      setAmbientPlaying(true);
-    } catch {
-      setAmbientPlaying(false);
-    }
-  };
-
-  const toggleVoice = async () => {
-    if (!voicePreset) return;
-
-    if (voicePlaying) {
-      voiceAudioRef.current?.pause();
-      setVoicePlaying(false);
-      return;
-    }
-
-    try {
-      const result = await ttsMutation.mutateAsync({
-        text: letter.content,
-        voiceId: previewVoiceId,
-        modelId: "eleven_flash_v2_5",
-      });
-
-      if (!voiceAudioRef.current) return;
-
-      const objectUrl = URL.createObjectURL(result.audioBlob);
-
-      if (voiceAudioUrlRef.current) {
-        URL.revokeObjectURL(voiceAudioUrlRef.current);
-      }
-
-      voiceAudioUrlRef.current = objectUrl;
-
-      voiceAudioRef.current.src = objectUrl;
-      voiceAudioRef.current.currentTime = 0;
-      voiceAudioRef.current.volume = voiceVolume;
-      await voiceAudioRef.current.play();
-      setVoicePlaying(true);
-      setVoiceLoadError(null);
-    } catch {
-      setVoicePlaying(false);
-      setVoiceLoadError("Voice could not be loaded right now.");
-    }
-  };
-
   const stopSelectedPlayback = () => {
     ambientAudioRef.current?.pause();
     voiceAudioRef.current?.pause();

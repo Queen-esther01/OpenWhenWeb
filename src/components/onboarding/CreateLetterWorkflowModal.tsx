@@ -50,17 +50,11 @@ type OpenWhenCategory = {
   previewText: string;
 };
 
-type SoundPreset = {
-  id: string;
-  label: string;
-  helper: string;
-  previewAudioUrl: string;
-};
-
 type VoicePreset = {
   id: string;
   label: string;
   helper: string;
+  gender?: "male" | "female";
   previewVoiceId: string;
   previewVoiceUrl: string;
 };
@@ -106,7 +100,7 @@ const openWhenCategories: OpenWhenCategory[] = [
   {
     id: "goodnight",
     label: "Goodnight",
-    displayLabel: 'Open when "goodnight"',
+    displayLabel: 'Open when "its time for bed"',
     helper: "For a tender bedtime note.",
     previewText:
       "Before you sleep, let this wrap around you like a blanket. You are loved, you are held, and tomorrow is allowed to be softer.",
@@ -120,6 +114,10 @@ const openWhenCategories: OpenWhenCategory[] = [
       "This one has no label, only intention. A small message for exactly when it is needed.",
   },
 ];
+
+function formatVoiceLabel(voice: VoicePreset) {
+  return voice.gender ? `${voice.label} [${voice.gender}]` : voice.label;
+}
 
 
 export default function CreateLetterWorkflowModal({
@@ -670,7 +668,7 @@ export default function CreateLetterWorkflowModal({
                         >
                           {voicePresets.map((option) => (
                             <option key={option.id} value={option.id}>
-                              {option.label}
+                              {formatVoiceLabel(option)}
                             </option>
                           ))}
                         </select>
@@ -686,7 +684,7 @@ export default function CreateLetterWorkflowModal({
                       <div className="flex items-start justify-between gap-3">
                         <div>
                           <p className="text-sm font-bold text-[#5f2f43]">
-                            {selectedVoice.label}
+                            {formatVoiceLabel(selectedVoice)}
                           </p>
                           <p className="mt-1 text-xs leading-5 text-[#7f465b]">
                             {selectedVoice.helper}

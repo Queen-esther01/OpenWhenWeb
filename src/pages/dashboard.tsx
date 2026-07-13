@@ -80,6 +80,7 @@ export default function DashboardPage() {
   const [partnerInvite, setPartnerInvite] = useState<PartnerInvite | null>(null);
   const [currentNow, setCurrentNow] = useState(() => new Date().toISOString());
   const inviteDetailsMutation = useInviteDetails();
+  const { mutateAsync: fetchInviteDetails } = inviteDetailsMutation;
 
   useEffect(() => {
     const timer = window.setInterval(() => {
@@ -152,7 +153,7 @@ export default function DashboardPage() {
         .limit(1);
 
       if (receivedInvites && receivedInvites.length > 0) {
-        const inviteDetails = await inviteDetailsMutation.mutateAsync({
+        const inviteDetails = await fetchInviteDetails({
           invitedBy: receivedInvites[0].invited_by,
           partnerEmail: receivedInvites[0].partner_email,
         });
@@ -190,7 +191,7 @@ export default function DashboardPage() {
     };
 
     void checkAuth();
-  }, [inviteDetailsMutation, router]);
+  }, [fetchInviteDetails, router]);
 
   useEffect(() => {
     if (router.query.compose === "1" && user) {

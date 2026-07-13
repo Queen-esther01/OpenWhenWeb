@@ -90,7 +90,7 @@ export default function Home() {
     } = await supabase.auth.getUser();
 
     if (user) {
-      await router.push({ pathname: "/dashboard", query: { compose: "1" } });
+      await router.push("/dashboard");
     } else {
       setIsSignupOpen(true);
     }

@@ -737,9 +737,25 @@ export default function CreateLetterWorkflowModal({
                       </h3>
                     </div>
 
-                    <AppButton variant="ghost" onClick={handlePreviewWholeNote} className="whitespace-nowrap">
-                      {fullAmbientPlaying || fullVoicePlaying ? <PauseCircle size={15} /> : <Play size={15} />}&nbsp;
-                      {fullAmbientPlaying || fullVoicePlaying ? "Stop preview" : "Preview all"}
+                    <AppButton
+                      variant="ghost"
+                      onClick={handlePreviewWholeNote}
+                      className="whitespace-nowrap"
+                      disabled={isVoicePreviewLoading}
+                    >
+                      {isVoicePreviewLoading ? (
+                        <LoaderCircle size={15} className="animate-spin" />
+                      ) : fullAmbientPlaying || fullVoicePlaying ? (
+                        <PauseCircle size={15} />
+                      ) : (
+                        <Play size={15} />
+                      )}
+                      &nbsp;
+                      {isVoicePreviewLoading
+                        ? "Loading voice..."
+                        : fullAmbientPlaying || fullVoicePlaying
+                          ? "Stop preview"
+                          : "Preview all"}
                     </AppButton>
                   </div>
 
